@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ApiAiSDK" Version="1.6.5" />
+    <PackageReference Include="EntityFrameworkCore.BootKit" Version="1.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\DotNetToolkit\DotNetToolkit\DotNetToolkit.csproj" />
+    <ProjectReference Include="..\Voicecoin.Nlp\Voicecoin.Nlp.csproj" />
+  </ItemGroup>
+
+</Project>

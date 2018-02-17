@@ -286,3 +286,8 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+/Voicecoin.WebStarter/wwwroot/Records
+/Voicecoin.WebStarter/settings.google-credential.json
+/Voicecoin.WebStarter/settings.dialogflow.json
+/Voicecoin.WebStarter/settings.database.json
+/Voicecoin.WebStarter/settings.aws.json
