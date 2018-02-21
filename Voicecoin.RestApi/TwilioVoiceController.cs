@@ -25,6 +25,7 @@ namespace Voicecoin.RestApi
     {
         private IConfiguration config;
         private IHostingEnvironment env;
+        private string dialogApiKey;
 
         protected Database dc { get; set; }
 
@@ -32,6 +33,7 @@ namespace Voicecoin.RestApi
         {
             config = Configuration;
             env = hostingEnvironment;
+            dialogApiKey = config.GetSection("dialogflow:apiKey").Value;
             dc = new DefaultDataContextLoader().GetDefaultDc();
         }
 
@@ -42,12 +44,13 @@ namespace Voicecoin.RestApi
             var action = new Uri($"{host}/TwilioVoice/ActionCallback");
             var response = new VoiceResponse();
 
-            var intent = new IntentClassifer(config).TextRequest(callRequestInfoModel.CallSid, $"Hello");
+            var intent = new IntentClassifer(dialogApiKey).TextRequest(callRequestInfoModel.CallSid, $"Hello");
 
-            response.Pause(length: 1);
+            response.Pause(length: 3);
             response.Play(await VoiceResponsePlay(intent.Result.Fulfillment.Speech, VoiceId.Joanna));
 
-            intent = new IntentClassifer(config).TextRequest(callRequestInfoModel.CallSid, $"I need help");
+            response.Pause(length: 1);
+            intent = new IntentClassifer(dialogApiKey).TextRequest(callRequestInfoModel.CallSid, $"I need help");
             response.Play(await VoiceResponsePlay(intent.Result.Fulfillment.Speech, VoiceId.Joanna));
 
 #if TWILIO_RECORD
@@ -69,13 +72,13 @@ namespace Voicecoin.RestApi
 #endif
             ConsoleLogger.WriteLine("System", $"{record.SpeechResult} [Confidence: {record.Confidence}]");
 
-            var aIResponse = new IntentClassifer(config).TextRequest(record.CallSid, record.SpeechResult);
+            var aIResponse = new IntentClassifer(dialogApiKey).TextRequest(record.CallSid, record.SpeechResult);
             string text = aIResponse.Result.Fulfillment.Speech;
             VoiceId voiceId = VoiceId.Joanna;
             
             if(aIResponse.Result.Metadata.IntentName == "Transfer2SalesBot - yes")
             {
-                response.Play(await VoiceResponsePlay("It's connected to the apple sales chatbot.", voiceId));
+                response.Play(await VoiceResponsePlay("Great, It's connected to for you.", voiceId));
             }
 
             if (aIResponse.Result.Metadata.IntentName == "AlphaGo")
@@ -84,11 +87,6 @@ namespace Voicecoin.RestApi
             }
 
             response.Pause(length: 1);
-
-            if (aIResponse.Result.Contexts.Select(x => x.Name).Contains("alphagoaskuserintent"))
-            {
-                
-            }
 
             if (aIResponse.Result.Parameters.ContainsKey("VoiceId")
                 && !String.IsNullOrEmpty(aIResponse.Result.Parameters["VoiceId"].ToString()))
@@ -134,7 +132,10 @@ namespace Voicecoin.RestApi
         private async Task<Uri> VoiceResponsePlay(string text, VoiceId voice)
         {
             string host = $"{Request.Scheme}://{Request.Host}";
-            string url = await new PollyUtter().Utter(text, env.WebRootPath, voice);
+            string url = await new PollyUtter(Database.Configuration.GetSection("Aws:AWSAccessKey").Value, 
+                    Database.Configuration.GetSection("Aws:AWSSecretKey").Value)
+                .Utter(text, env.WebRootPath, voice);
+
             string externalLink = $"{host}{url.Replace(env.WebRootPath, String.Empty).Replace('\\', '/')}";
             return new Uri(externalLink);
         }

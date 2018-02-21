@@ -7,9 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+    <PackageReference Include="AWSSDK.Polly" Version="3.3.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.6.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.2.0" />
     <PackageReference Include="MSTest.TestFramework" Version="1.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Voicecoin.AiBot\Voicecoin.AiBot.csproj" />
+    <ProjectReference Include="..\Voicecoin.RestApi\Voicecoin.RestApi.csproj" />
   </ItemGroup>
 
 </Project>

@@ -13,29 +13,34 @@ namespace Voicecoin.AiBot
 {
     public class IntentClassifer
     {
-        private IConfiguration _configuration;
+        private string dialogApiKey;
 
-        public IntentClassifer(IConfiguration Configuration)
+        public IntentClassifer(string dialogApiKey)
         {
-            _configuration = Configuration;
+            this.dialogApiKey = dialogApiKey;
         }
 
-        public AIResponse TextRequest(String sessionId, String userSay)
+        public AIResponse TextRequest(String sessionId, String userSay, bool writeLog = true)
         {
-            Console.WriteLine($"{DateTime.UtcNow} User: {userSay}");
+            if (writeLog)
+            {
+                Console.WriteLine($"{DateTime.UtcNow} User: {userSay}");
+            }
 
-            string apiAiKey = _configuration.GetSection("dialogflow:apiKey").Value;
+            string apiAiKey = dialogApiKey;
 
             var config = new AIConfiguration(apiAiKey, SupportedLanguage.English);
             config.SessionId = sessionId;
             ApiAi apiAi = new ApiAi(config);
 
-            var dc = new DefaultDataContextLoader().GetDefaultDc();
             var response = apiAi.TextRequest(userSay);
 
-            Console.WriteLine($"{DateTime.UtcNow} Contexts: {String.Join(',', response.Result.Contexts.Select(x => x.Name))} [{response.Result.Metadata.IntentName}]");
+            if (writeLog)
+            {
+                Console.WriteLine($"{DateTime.UtcNow} Contexts: {String.Join(',', response.Result.Contexts.Select(x => x.Name))} [{response.Result.Metadata.IntentName}]");
 
-            Console.WriteLine($"{DateTime.UtcNow} Bot: {response.Result.Fulfillment.Speech}");
+                Console.WriteLine($"{DateTime.UtcNow} Bot: {response.Result.Fulfillment.Speech}");
+            }
 
             return response;
         }

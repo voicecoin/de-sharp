@@ -4,6 +4,13 @@ using System.Text;
 
 namespace Voicecoin.RestApi
 {
+    public class VoiceCapturedModel
+    {
+        public string CallSid { get; set; }
+        public string SpeechResult { get; set; }
+        public string Confidence { get; set; }
+    }
+
     public class TwilioCallbackModel
     {
         //The unique 34 character ID of the transcription.

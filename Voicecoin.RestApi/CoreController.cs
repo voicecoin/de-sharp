@@ -8,7 +8,6 @@ using System.Text;
 
 namespace Voicecoin.RestApi
 {
-    [Authorize]
     [Produces("application/json", "application/xml")]
     [Route("[controller]/[action]")]
     public class CoreController : ControllerBase

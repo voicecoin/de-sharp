@@ -1,22 +1,34 @@
 ﻿using Amazon.Polly;
 using Amazon.Polly.Model;
+using DotNetToolkit;
 using EntityFrameworkCore.BootKit;
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Voicecoin.RestApi
 {
     public class PollyUtter
     {
+        private string awsAccessKey;
+        private string awsSecretKey;
+
+        public PollyUtter(string awsAccessKey, string awsSecretKey)
+        {
+            this.awsAccessKey = awsAccessKey;
+            this.awsSecretKey = awsSecretKey;
+        }
+
         public async Task<string> Utter(string text, string dir, VoiceId voice)
         {
-            string fileName = GetMd5Hash(text + "-" + voice) + ".mp3";
+            string fileName = (text + "-" + voice).GetMd5Hash() + ".mp3";
 
-            string recordBasePath = Database.Configuration.GetSection("RecordsPath").Value;
+            string recordBasePath = Database.Configuration == null ? @"Records" : Database.Configuration.GetSection("RecordsPath").Value;
             string filePath = $"{dir}\\{recordBasePath}\\{fileName}";
 
             if (File.Exists(filePath))
@@ -24,9 +36,9 @@ namespace Voicecoin.RestApi
                 return filePath;
             }
 
-            string awsAccessKeyId = Database.Configuration.GetSection("Aws:AWSAccessKey").Value;
+            string awsAccessKeyId = awsAccessKey;
 
-            string awsSecretAccessKey = Database.Configuration.GetSection("Aws:AWSSecretKey").Value;
+            string awsSecretAccessKey = awsSecretKey;
 
             Amazon.RegionEndpoint REGION = Amazon.RegionEndpoint.USEast1;
 
@@ -48,26 +60,17 @@ namespace Voicecoin.RestApi
             return filePath;
         }
 
-        public string GetMd5Hash(string input)
+        public void Play(string filePath)
         {
-            using (MD5 md5Hash = MD5.Create())
+            using (var audioFile = new AudioFileReader(filePath))
+            using (var outputDevice = new WaveOutEvent())
             {
-                // Convert the input string to a byte array and compute the hash.
-                byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
-
-                // Create a new Stringbuilder to collect the bytes
-                // and create a string.
-                StringBuilder sBuilder = new StringBuilder();
-
-                // Loop through each byte of the hashed data 
-                // and format each one as a hexadecimal string.
-                for (int i = 0; i < data.Length; i++)
+                outputDevice.Init(audioFile);
+                outputDevice.Play();
+                while (outputDevice.PlaybackState == PlaybackState.Playing)
                 {
-                    sBuilder.Append(data[i].ToString("x2"));
+                    Thread.Sleep(1000);
                 }
-
-                // Return the hexadecimal string.
-                return sBuilder.ToString();
             }
         }
     }
