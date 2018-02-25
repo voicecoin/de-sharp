@@ -119,7 +119,7 @@ namespace Voicecoin.RestApi
             string transcript = null;
             try
             {
-                transcript = await new GoogleSpeech().Recognize(filePath);
+                transcript = await new GoogleSpeech().FileRecognize(filePath);
             }
             catch (Exception ex)
             {

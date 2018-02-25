@@ -1,5 +1,6 @@
 ﻿using ApiAiSDK;
 using ApiAiSDK.Model;
+using DotNetToolkit;
 using EntityFrameworkCore.BootKit;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
@@ -20,12 +21,9 @@ namespace Voicecoin.AiBot
             this.dialogApiKey = dialogApiKey;
         }
 
-        public AIResponse TextRequest(String sessionId, String userSay, bool writeLog = true)
+        public AIResponse TextRequest(String sessionId, String userSay)
         {
-            if (writeLog)
-            {
-                Console.WriteLine($"{DateTime.UtcNow} User: {userSay}");
-            }
+            ConsoleLogger.WriteLine("Customer", $"{userSay}");
 
             string apiAiKey = dialogApiKey;
 
@@ -33,16 +31,23 @@ namespace Voicecoin.AiBot
             config.SessionId = sessionId;
             ApiAi apiAi = new ApiAi(config);
 
-            var response = apiAi.TextRequest(userSay);
+            var aIResponse = apiAi.TextRequest(userSay);
 
-            if (writeLog)
+            //Console.WriteLine($"{DateTime.UtcNow} Contexts: {String.Join(',', response.Result.Contexts.Select(x => x.Name))} [{response.Result.Metadata.IntentName}]");
+
+            /*for (int messageIndex = 0; messageIndex < aIResponse.Result.Fulfillment.Messages.Count; messageIndex++)
             {
-                Console.WriteLine($"{DateTime.UtcNow} Contexts: {String.Join(',', response.Result.Contexts.Select(x => x.Name))} [{response.Result.Metadata.IntentName}]");
+                var message = JObject.FromObject(aIResponse.Result.Fulfillment.Messages[messageIndex]);
+                string type = message["type"].ToString();
 
-                Console.WriteLine($"{DateTime.UtcNow} Bot: {response.Result.Fulfillment.Speech}");
-            }
+                if (type == "0")
+                {
+                    string speech = message["speech"].ToString();
+                    ConsoleLogger.WriteLine("Voice Browser", $"{speech}");
+                }
+            }*/
 
-            return response;
+            return aIResponse;
         }
 
         public string ReplaceTokens4Response(JObject jObject, string text)

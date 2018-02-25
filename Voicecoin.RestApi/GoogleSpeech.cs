@@ -3,16 +3,72 @@ using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Speech.V1;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static Google.Cloud.Speech.V1.SpeechClient;
 
 namespace Voicecoin.RestApi
 {
     public class GoogleSpeech
     {
-        public async Task<string> Recognize(string urlPath)
+        private string Transcript { get; set; }
+        private SpeechClient SpeechClient { get; set; }
+        private StreamingRecognizeStream StreamCall { get; set; }
+
+        public GoogleSpeech()
+        {
+            GoogleCredential credential = GoogleCredential.GetApplicationDefault();
+        }
+
+        public async Task InitRecognitionConfig()
+        {
+            SpeechClient = Create();
+            StreamCall = SpeechClient.StreamingRecognize();
+
+            // Write the initial request with the config.
+            await StreamCall.WriteAsync(
+                new StreamingRecognizeRequest()
+                {
+                    StreamingConfig = new StreamingRecognitionConfig()
+                    {
+                        Config = new RecognitionConfig()
+                        {
+                            Encoding =
+                            RecognitionConfig.Types.AudioEncoding.Linear16,
+                            SampleRateHertz = 16000,
+                            LanguageCode = "en",
+                        },
+                        InterimResults = true,
+                    }
+                });
+
+            // Print responses as they arrive.
+            Task printResponses = Task.Run(async () =>
+            {
+                while (await StreamCall.ResponseStream.MoveNext(
+                    default(CancellationToken)))
+                {
+                    foreach (var result in StreamCall.ResponseStream
+                        .Current.Results)
+                    {
+                        foreach (var alternative in result.Alternatives)
+                        {
+                            Console.WriteLine(alternative.Transcript);
+                        }
+
+                        if (result.IsFinal)
+                        {
+                            Transcript = String.Join("", result.Alternatives.Select(x => x.Transcript));
+                        }
+                    }
+                }
+            });
+        }
+
+        public async Task<string> FileRecognize(string urlPath)
         {
             StringBuilder sb = new StringBuilder();
             GoogleCredential credential = await GoogleCredential.GetApplicationDefaultAsync();
@@ -38,19 +94,11 @@ namespace Voicecoin.RestApi
             return sb.ToString();
         }
 
-        public async Task<String> StreamingRecognize()
+        public async Task<object> FileStreamingRecognize(string filePath)
         {
-            if (NAudio.Wave.WaveIn.DeviceCount < 1)
-            {
-                Console.WriteLine("No microphone!");
-                return "No microphone!";
-            }
-
-            //GoogleCredential credential = GoogleCredential.FromFile(env.ContentRootPath + "\\settings.google-credential.json");
             GoogleCredential credential = await GoogleCredential.GetApplicationDefaultAsync();
             var speech = SpeechClient.Create();
             var streamingCall = speech.StreamingRecognize();
-
             // Write the initial request with the config.
             await streamingCall.WriteAsync(
                 new StreamingRecognizeRequest()
@@ -67,12 +115,7 @@ namespace Voicecoin.RestApi
                         InterimResults = true,
                     }
                 });
-
-
-            string transcript = String.Empty;
-
             // Print responses as they arrive.
-            bool isFinal = false;
             Task printResponses = Task.Run(async () =>
             {
                 while (await streamingCall.ResponseStream.MoveNext(
@@ -85,17 +128,39 @@ namespace Voicecoin.RestApi
                         {
                             Console.WriteLine(alternative.Transcript);
                         }
-
-                        isFinal = result.IsFinal;
-
-                        if (result.IsFinal)
-                        {
-                            transcript = String.Join("", result.Alternatives.Select(x => x.Transcript));
-                            ConsoleLogger.WriteLine("System", $"{transcript} [Stability: {result.Stability}]");
-                        }
                     }
                 }
             });
+            // Stream the file content to the API.  Write 2 32kb chunks per 
+            // second.
+            using (FileStream fileStream = new FileStream(filePath, FileMode.Open))
+            {
+                var buffer = new byte[32 * 1024];
+                int bytesRead;
+                while ((bytesRead = await fileStream.ReadAsync(
+                    buffer, 0, buffer.Length)) > 0)
+                {
+                    await streamingCall.WriteAsync(
+                        new StreamingRecognizeRequest()
+                        {
+                            AudioContent = Google.Protobuf.ByteString
+                            .CopyFrom(buffer, 0, bytesRead),
+                        });
+                    await Task.Delay(500);
+                };
+            }
+            await streamingCall.WriteCompleteAsync();
+            await printResponses;
+            return 0;
+        }
+
+        public async Task<String> MicStreamingRecognize(string lang = "en")
+        {
+            if (NAudio.Wave.WaveIn.DeviceCount < 1)
+            {
+                Console.WriteLine("No microphone!");
+                return "No microphone!";
+            }
 
             // Read from the microphone and stream to API.
             object writeLock = new object();
@@ -109,7 +174,7 @@ namespace Voicecoin.RestApi
                     lock (writeLock)
                     {
                         if (!writeMore) return;
-                        streamingCall.WriteAsync(
+                        StreamCall.WriteAsync(
                             new StreamingRecognizeRequest()
                             {
                                 AudioContent = Google.Protobuf.ByteString.CopyFrom(args.Buffer, 0, args.BytesRecorded)
@@ -119,10 +184,12 @@ namespace Voicecoin.RestApi
                 };
 
             waveIn.StartRecording();
-            Console.WriteLine("Speak now...");
+
+            ConsoleLogger.WriteLine("Voice Browser", $"Listening...");
+            //Console.WriteLine("Speak now...");
 
             // Set recording timeout
-            int timeoutInSeconds = 5;
+            int timeoutInSeconds = 10;
             double timeoutInSecondsElapsed = 0;
 
             do
@@ -130,17 +197,41 @@ namespace Voicecoin.RestApi
                 // Set speech timeout
                 await Task.Delay(TimeSpan.FromSeconds(0.1));
                 timeoutInSecondsElapsed += 0.1;
-            } while (!isFinal && timeoutInSecondsElapsed <= timeoutInSeconds);
+            } while (String.IsNullOrEmpty(Transcript) && timeoutInSecondsElapsed <= timeoutInSeconds);
 
             // Stop recording and shut down.
             waveIn.StopRecording();
-            Console.WriteLine("Stop capture voice...");
+            //Console.WriteLine("Stop capture voice...");
 
             lock (writeLock) writeMore = false;
-            await streamingCall.WriteCompleteAsync();
-            await printResponses;
+            //await StreamingCall.WriteCompleteAsync();
+            //await printResponses;
 
-            return transcript;
+            return Transcript;
+        }
+
+        public async Task<string> BytesStreamingRecognize(byte[] buffer)
+        {
+            if (String.IsNullOrEmpty(Transcript))
+            {
+                StreamCall.WriteAsync(
+                    new StreamingRecognizeRequest()
+                    {
+                        AudioContent = Google.Protobuf.ByteString
+                            .CopyFrom(buffer, 0, buffer.Length)
+                    }).Wait();
+
+                return String.Empty;
+            }
+            else
+            {
+                // Stop recording and shut down.
+                await StreamCall.WriteCompleteAsync();
+
+                Console.WriteLine($"Transcript: {Transcript}");
+
+                return Transcript;
+            }
         }
     }
 }

@@ -9,6 +9,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NAudio.Wave;
+using Voicecoin.RestApi;
 
 namespace DE_Sharp.WebStarter
 {
@@ -41,6 +43,7 @@ namespace DE_Sharp.WebStarter
 
             app.UseStaticFiles();
             app.UseMvc();
+            app.UseNexmoAudioStream(Configuration, env);
 
             Database.Assemblies = new String[] { "Voicecoin.AiBot" };
             Database.ContentRootPath = env.ContentRootPath;

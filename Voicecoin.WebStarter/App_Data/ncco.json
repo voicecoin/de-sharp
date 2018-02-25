@@ -1,0 +1,19 @@
+[
+  {
+    "action":"connect",
+    "eventUrl":[
+      ""
+    ],
+    "from":"447700900000",
+    "endpoint":[
+      {
+        "type": "websocket",
+        "uri": "http://d254a4bf.ngrok.io/socket",
+        "content-type": "audio/l16;rate=16000",
+        "headers": {
+          "whatever": "metadata_you_want"
+        }
+      }
+    ]
+  }
+]

@@ -5,6 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\Records\**" />
+    <Content Remove="wwwroot\Records\**" />
+    <EmbeddedResource Remove="wwwroot\Records\**" />
+    <None Remove="wwwroot\Records\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
