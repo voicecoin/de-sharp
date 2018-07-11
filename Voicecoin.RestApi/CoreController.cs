@@ -16,7 +16,7 @@ namespace Voicecoin.RestApi
 
         public CoreController()
         {
-            dc = new DefaultDataContextLoader().GetDefaultDc();
+            //dc = new DefaultDataContextLoader().GetDefaultDc();
         }
 
         protected String CurrentUserId

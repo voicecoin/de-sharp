@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Twilio.AspNet.Core;
 using Twilio.Http;
 using Twilio.TwiML;
+using Twilio.TwiML.Voice;
 using Voicecoin.AiBot;
 
 namespace Voicecoin.RestApi
@@ -56,7 +57,7 @@ namespace Voicecoin.RestApi
 #if TWILIO_RECORD
             response.Record(action: action, trim: "trim-silence", method: HttpMethod.Post);
 #else
-            response.Gather(input: "speech dtmf", action: action, method: HttpMethod.Post, speechTimeout: "1", timeout: 5);
+            response.Gather(input: new List<Gather.InputEnum> { Gather.InputEnum.Dtmf, Gather.InputEnum.Speech }, action: action, method: HttpMethod.Post, speechTimeout: "1", timeout: 5);
 #endif
 
             return Content(response.ToString(), "application/xml");
@@ -98,7 +99,7 @@ namespace Voicecoin.RestApi
 
             string host = $"{Request.Scheme}://{Request.Host}";
 
-            response.Gather(input: "speech dtmf", action: new Uri($"{host}/TwilioVoice/ActionCallback"), method: HttpMethod.Post, speechTimeout: "1", timeout: 5);
+            response.Gather(input: new List<Gather.InputEnum> { Gather.InputEnum.Dtmf, Gather.InputEnum.Speech }, action: new Uri($"{host}/TwilioVoice/ActionCallback"), method: HttpMethod.Post, speechTimeout: "1", timeout: 5);
 
             return Content(response.ToString(), "application/xml");
         }

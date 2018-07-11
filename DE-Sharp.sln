@@ -9,11 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voicecoin.AiBot", "Voicecoi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voicecoin.RestApi", "Voicecoin.RestApi\Voicecoin.RestApi.csproj", "{61967EC7-9738-40AB-8DA0-45CE0E753626}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voicecoin.Nlp", "Voicecoin.Nlp\Voicecoin.Nlp.csproj", "{B8151659-670A-4332-9767-E1B91DB80084}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetToolkit", "..\DotNetToolkit\DotNetToolkit\DotNetToolkit.csproj", "{29DC9F99-B90D-4426-B9A5-10455C1101BD}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Voicecoin.Test", "Voicecoin.Test\Voicecoin.Test.csproj", "{DCE6A2A9-4D02-4EA7-91C2-9710C117DCB9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voicecoin.Test", "Voicecoin.Test\Voicecoin.Test.csproj", "{DCE6A2A9-4D02-4EA7-91C2-9710C117DCB9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,14 +29,6 @@ Global
 		{61967EC7-9738-40AB-8DA0-45CE0E753626}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61967EC7-9738-40AB-8DA0-45CE0E753626}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61967EC7-9738-40AB-8DA0-45CE0E753626}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B8151659-670A-4332-9767-E1B91DB80084}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B8151659-670A-4332-9767-E1B91DB80084}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B8151659-670A-4332-9767-E1B91DB80084}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B8151659-670A-4332-9767-E1B91DB80084}.Release|Any CPU.Build.0 = Release|Any CPU
-		{29DC9F99-B90D-4426-B9A5-10455C1101BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{29DC9F99-B90D-4426-B9A5-10455C1101BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{29DC9F99-B90D-4426-B9A5-10455C1101BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{29DC9F99-B90D-4426-B9A5-10455C1101BD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DCE6A2A9-4D02-4EA7-91C2-9710C117DCB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DCE6A2A9-4D02-4EA7-91C2-9710C117DCB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCE6A2A9-4D02-4EA7-91C2-9710C117DCB9}.Release|Any CPU.ActiveCfg = Release|Any CPU

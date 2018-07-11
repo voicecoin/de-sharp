@@ -33,11 +33,11 @@ namespace Voicecoin.RestApi
         public async Task Listening(VoiceCapturedModel record)
         {
             var gs = new GoogleSpeech();
-            await gs.InitRecognitionConfig();
+            await gs.InitRecognitionConfig("voice web, voice, web, voiceweb");
             var transcript = await gs.MicStreamingRecognize();
             await ActionCallback(new VoiceCapturedModel
             {
-                CallSid = record.CallSid,
+                CallSid = Guid.NewGuid().ToString(),
                 SpeechResult = transcript
             });
         }

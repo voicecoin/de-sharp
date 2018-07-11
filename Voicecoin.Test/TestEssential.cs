@@ -1,16 +1,17 @@
-﻿using System;
+﻿using EntityFrameworkCore.BootKit;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Voicecoin.Test
 {
     public class TestEssential
     {
-        protected string dialogApiKey = "";
+        protected Database dc;
         protected string sessionId;
-        protected string awsAccessKey = "";
-        protected string awsSecretKey = "";
-        protected string recordsBaseDir = @"C:\Voicecoin.WebStarter\wwwroot";
+        protected string contentRoot = @"C:\Voicecoin.WebStarter";
 
         public TestEssential()
         {

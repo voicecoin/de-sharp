@@ -23,10 +23,36 @@ namespace Voicecoin.RestApi
             GoogleCredential credential = GoogleCredential.GetApplicationDefault();
         }
 
-        public async Task InitRecognitionConfig()
+        public async Task InitRecognitionConfig(String hints = "")
         {
             SpeechClient = Create();
             StreamCall = SpeechClient.StreamingRecognize();
+
+            var context = new SpeechContext { };
+            RecognitionConfig config = null;
+
+            if (!String.IsNullOrEmpty(hints))
+            {
+                context.Phrases.Add(hints.Split(','));
+
+                // Write the initial request with the config.
+                config = new RecognitionConfig()
+                {
+                    Encoding = RecognitionConfig.Types.AudioEncoding.Linear16,
+                    SampleRateHertz = 16000,
+                    LanguageCode = "en",
+                    SpeechContexts = { context }
+                };
+            }
+            else
+            {
+                config = new RecognitionConfig()
+                {
+                    Encoding = RecognitionConfig.Types.AudioEncoding.Linear16,
+                    SampleRateHertz = 16000,
+                    LanguageCode = "en"
+                };
+            }
 
             // Write the initial request with the config.
             await StreamCall.WriteAsync(
@@ -34,13 +60,7 @@ namespace Voicecoin.RestApi
                 {
                     StreamingConfig = new StreamingRecognitionConfig()
                     {
-                        Config = new RecognitionConfig()
-                        {
-                            Encoding =
-                            RecognitionConfig.Types.AudioEncoding.Linear16,
-                            SampleRateHertz = 16000,
-                            LanguageCode = "en",
-                        },
+                        Config = config,
                         InterimResults = true,
                     }
                 });

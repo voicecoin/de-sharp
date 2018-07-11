@@ -28,7 +28,7 @@ namespace DE_Sharp.WebStarter
                             config.AddJsonFile(setting, optional: false, reloadOnChange: true);
                         });
                    })
-                .UseUrls("http://localhost:8800")
+                .UseUrls("http://0.0.0.0:8800")
                 .UseStartup<Startup>()
                 .Build();
     }
